@@ -1,0 +1,32 @@
+green_knight_test <- function(pred1, pred2, actual){
+  
+  pred1dec <- 1 / pred1 
+  pred2dec <- 1 / pred2
+  
+  pred1bets <- max(0,100*(pred1 - (1-pred1)/pred2dec)) # kelly bet size 
+  pred2bets <- max(0,100*(pred2 - (1-pred2)/pred1dec)) # kelly bet size
+  
+  pred1win <- ifelse(pred1bets > 0 & actual == 1, pred1bets*pred2dec - pred1bets,
+                     ifelse(pred1bets > 0 & actual == 0, pred1bets*-1, 0))
+  pred2win <- ifelse(pred2bets > 0 & actual == 1, pred1bets*pred1dec - pred2bets,
+                     ifelse(pred2bets > 0 & actual == 0, pred2bets*-1, 0))
+  
+  pred1profit <- sum(pred1win)
+  pred2profit <- sum(pred2win)
+  
+ 
+  df <- data.frame(pred1,pred2,actual,pred1dec,pred2dec,pred1bets,pred2bets,pred1win,pred2win)
+  return(df)
+
+  print(paste0("Model 1 wins $", round(pred1profit,2), ". Model 2 wins $", round(pred2profit, 2)))
+  
+}
+
+set.seed(102)
+
+pred1 <- runif(1, min = 1, max = 10) / 10
+pred2 <- runif(1, min = 1, max = 10) / 10
+actual <- sample.int(2, 1, replace = TRUE) - 1
+
+green_knight_test(pred1, pred2, actual)
+
