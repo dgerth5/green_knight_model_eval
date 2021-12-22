@@ -1,32 +1,26 @@
-green_knight_test <- function(pred1, pred2, actual){
+gn_test <- function(pred1, pred2, actual){
   
-  pred1dec <- 1 / pred1 
-  pred2dec <- 1 / pred2
+  # complement
+  pred1c <- 1 - pred1
+  pred2c <- 1 - pred2
   
-  pred1bets <- max(0,100*(pred1 - (1-pred1)/pred2dec)) # kelly bet size 
-  pred2bets <- max(0,100*(pred2 - (1-pred2)/pred1dec)) # kelly bet size
+  # book odds
+  pred1_odds <- 1/pred1
+  pred1c_odds <- 1/pred1c
   
-  pred1win <- ifelse(pred1bets > 0 & actual == 1, pred1bets*pred2dec - pred1bets,
-                     ifelse(pred1bets > 0 & actual == 0, pred1bets*-1, 0))
-  pred2win <- ifelse(pred2bets > 0 & actual == 1, pred1bets*pred1dec - pred2bets,
-                     ifelse(pred2bets > 0 & actual == 0, pred2bets*-1, 0))
+  pred2_odds <- 1/pred2
+  pred2c_odds <- 1/pred2c
   
-  pred1profit <- sum(pred1win)
-  pred2profit <- sum(pred2win)
+  # computing bet size
   
- 
-  df <- data.frame(pred1,pred2,actual,pred1dec,pred2dec,pred1bets,pred2bets,pred1win,pred2win)
-  return(df)
-
-  print(paste0("Model 1 wins $", round(pred1profit,2), ". Model 2 wins $", round(pred2profit, 2)))
+  bet1 <- ifelse(pred1 > pred2, pred1 - pred1c/pred2_odds, pred1c - pred1/(pred2c_odds-1))
+  bet2 <- ifelse(pred2 > pred1, pred2 - pred2c/pred1_odds, pred2c - pred2/(pred1c_odds-1))
+  
+  # compute winnings
+  
+  win1 <- actual*bet1*ifelse(pred1 > pred2, pred2_odds, pred2c_odds)
+  win2 <- actual*bet2*ifelse(pred2 > pred1, pred1_odds, pred1c_odds)
+  
+  print(paste0("Model A wins $",round(sum(win1),2), " Model B wins $", round(sum(win2),2)))
   
 }
-
-set.seed(102)
-
-pred1 <- runif(1, min = 1, max = 10) / 10
-pred2 <- runif(1, min = 1, max = 10) / 10
-actual <- sample.int(2, 1, replace = TRUE) - 1
-
-green_knight_test(pred1, pred2, actual)
-
